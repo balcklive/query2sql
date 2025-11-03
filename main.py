@@ -144,13 +144,8 @@ class SchemaProvider:
 - job_type_id (int): Foreign key to job_types table
 
 ### Salary Information:
-⚠️ 注意：根据实际数据库调整字段名
-如果数据库使用 salary_lower/salary_upper：
 - salary_lower (bigint): Lower bound of salary range
 - salary_upper (bigint): Upper bound of salary range
-
-如果数据库使用单个 salary 字段：
-- salary (bigint): Salary amount
 - salary_currency (varchar): Currency code (CNY, USD, etc.)
 - salary_payroll_cycle (varchar): Payment cycle (monthly, yearly, etc.)
 
@@ -195,9 +190,6 @@ class SchemaProvider:
 ### Scenario 1: Hot Jobs for Job Seekers
 Query: "Show me the most recent high-salary jobs"
 
-⚠️ 注意：根据实际数据库字段调整以下 SQL
-
-如果使用 salary_lower/salary_upper：
 ```sql
 SELECT
     j.title_cn,
@@ -214,26 +206,9 @@ ORDER BY j.published_at DESC, j.salary_upper DESC
 LIMIT 20;
 ```
 
-如果使用单个 salary 字段：
-```sql
-SELECT
-    j.title_cn,
-    c.name as company_name,
-    j.description_cn,
-    j.salary,
-    j.salary_currency,
-    j.published_at
-FROM jobs j
-LEFT JOIN companies c ON j.company_id = c.id
-WHERE j.status = 'PUBLISHED'
-ORDER BY j.published_at DESC, j.salary DESC
-LIMIT 20;
-```
-
 ### Scenario 2: Remote Jobs for Recruiters
 Query: "Which jobs support remote work?"
 
-如果使用 salary_lower/salary_upper：
 ```sql
 SELECT
     j.id,
@@ -249,27 +224,12 @@ LEFT JOIN companies c ON j.company_id = c.id
 WHERE j.remote = true AND j.status = 'PUBLISHED';
 ```
 
-如果使用单个 salary 字段：
-```sql
-SELECT
-    j.id,
-    j.title_cn,
-    c.name as company_name,
-    j.remote,
-    j.salary,
-    j.salary_currency,
-    j.description_cn
-FROM jobs j
-LEFT JOIN companies c ON j.company_id = c.id
-WHERE j.remote = true AND j.status = 'PUBLISHED';
-```
-
 ### Important Notes:
 1. Always filter by status = 'PUBLISHED' to get active jobs
 2. Use LEFT JOIN for company information
 3. salary_lower and salary_upper define the salary range
 4. Use ORDER BY published_at DESC for recent jobs
-5. Consider sorting by salary for high-paying jobs
+5. Consider sorting by salary_upper for high-paying jobs
 """
 
 
