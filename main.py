@@ -342,8 +342,7 @@ IMPORTANT RULES:
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
                     ],
-                    temperature=0.3,
-                    max_tokens=500
+                    temperature=0.3
                 )
                 sql_text = response.choices[0].message.content
             except Exception as e:
@@ -509,25 +508,46 @@ if __name__ == "__main__":
     host = "127.0.0.1"
     port = 8000
 
-    # Parse simple command line args for HTTP mode
+    # Parse command line arguments for transport mode
+    # Support --http, --streamable-http, or --transport=xxx
     if "--http" in sys.argv or "--transport=http" in sys.argv:
         transport = "http"
+    elif "--streamable-http" in sys.argv or "--transport=streamable-http" in sys.argv:
+        transport = "streamable-http"
+    else:
+        # Check for --transport with value
+        for arg in sys.argv:
+            if arg.startswith("--transport="):
+                transport = arg.split("=", 1)[1]
+                break
 
-        # Check for host argument
-        if "--host" in sys.argv:
-            idx = sys.argv.index("--host")
-            if idx + 1 < len(sys.argv):
-                host = sys.argv[idx + 1]
+    # Check for host argument
+    if "--host" in sys.argv:
+        idx = sys.argv.index("--host")
+        if idx + 1 < len(sys.argv):
+            host = sys.argv[idx + 1]
+    else:
+        # Check for --host=xxx format
+        for arg in sys.argv:
+            if arg.startswith("--host="):
+                host = arg.split("=", 1)[1]
+                break
 
-        # Check for port argument
-        if "--port" in sys.argv:
-            idx = sys.argv.index("--port")
-            if idx + 1 < len(sys.argv):
-                port = int(sys.argv[idx + 1])
+    # Check for port argument
+    if "--port" in sys.argv:
+        idx = sys.argv.index("--port")
+        if idx + 1 < len(sys.argv):
+            port = int(sys.argv[idx + 1])
+    else:
+        # Check for --port=xxx format
+        for arg in sys.argv:
+            if arg.startswith("--port="):
+                port = int(arg.split("=", 1)[1])
+                break
 
     # Run the server
-    if transport == "http":
-        print(f"Starting HTTP server on {host}:{port}")
-        mcp.run(transport="http", host=host, port=port)
+    if transport in ("http", "streamable-http", "sse"):
+        print(f"Starting {transport.upper()} server on {host}:{port}")
+        mcp.run(transport=transport, host=host, port=port)
     else:
         mcp.run()
