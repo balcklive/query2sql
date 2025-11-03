@@ -341,8 +341,7 @@ IMPORTANT RULES:
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
-                    ],
-                    temperature=0.3
+                    ]
                 )
                 sql_text = response.choices[0].message.content
             except Exception as e:
